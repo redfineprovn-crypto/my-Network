@@ -16,7 +16,7 @@ if (!process.env.DATABASE_URL) {
 
 // Cấu hình kết nối Supabase PostgreSQL Pool
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || "postgresql://postgres:AVNS_zs4VoqQXbwdzHYvPiUC@db.dujbquniddoirldqwdfy.supabase.co:6543/postgres",
+    connectionString: process.env.DATABASE_URL || "postgresql://postgres:AVNS_zs4VoqQXbwdzHYvPiUC@db.dujbquniddoirldqwdfy.pooler.supabase.co:6543/postgres?pgbouncer=true",
     ssl: {
         rejectUnauthorized: false
     }
