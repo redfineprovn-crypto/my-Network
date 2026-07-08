@@ -1,6 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { BookOpen, Upload, History, Shield, User, LogOut, Search, Filter, BarChart2 } from 'lucide-react';
+
+// CẤU HÌNH ĐƯỜNG LINK BACKEND RENDER CHẠY ONLINE 24/24
+const API_BASE_URL = 'https://my-network-pzjd.onrender.com';
 
 export default function App() {
   // =========================================================================
@@ -44,7 +46,7 @@ export default function App() {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/api/documents?search=${search}&faculty=${faculty}`);
+        const res = await fetch(`${API_BASE_URL}/api/documents?search=${search}&faculty=${faculty}`);
         if (res.ok) {
           const data = await res.json();
           setDocuments(Array.isArray(data) ? data : []);
@@ -54,7 +56,7 @@ export default function App() {
 
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:5000/api/admin/stats');
+        const res = await fetch(`${API_BASE_URL}/api/admin/stats`);
         if (res.ok) {
           const data = await res.json();
           setStats(data);
@@ -71,7 +73,7 @@ export default function App() {
   // Tải tin nhắn chat hỗ trợ trực tuyến công cộng
   const fetchChatMessages = useCallback(async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/chat');
+      const res = await fetch(`${API_BASE_URL}/api/chat`);
       if (res.ok) {
         const data = await res.json();
         setChatMessages(Array.isArray(data) ? data : []);
@@ -85,7 +87,6 @@ export default function App() {
   useEffect(() => {
     if (!isChatOpen) return;
     
-    // Tạo một hàm bọc để bắt lỗi Promise, giúp IDE không báo đỏ (Floating Promise)
     const loadMessages = () => {
       fetchChatMessages().catch(err => console.error("Lỗi polling chat:", err));
     };
@@ -98,7 +99,7 @@ export default function App() {
   // Tải lịch sử đọc riêng của từng tài khoản khi click tab Lịch sử
   useEffect(() => {
     if (currentPage === 'history' && user) {
-      fetch(`http://127.0.0.1:5000/api/users/${user.id}/history`)
+      fetch(`${API_BASE_URL}/api/users/${user.id}/history`)
         .then(res => res.json())
         .then(data => setHistoryList(data))
         .catch(() => console.log("Lỗi tải lịch sử"));
@@ -113,7 +114,7 @@ export default function App() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/login', {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formAuth.email, password: formAuth.password })
@@ -133,7 +134,7 @@ export default function App() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/register', {
+      const res = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ full_name: formAuth.name, email: formAuth.email, password: formAuth.password })
@@ -148,7 +149,7 @@ export default function App() {
     e.preventDefault();
     if (!user) return alert("Bạn cần đăng nhập để upload!");
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/documents', {
+      const res = await fetch(`${API_BASE_URL}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...uploadForm, uploaded_by: user.id })
@@ -171,7 +172,7 @@ export default function App() {
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/chat', {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -190,12 +191,12 @@ export default function App() {
   // Mở Popup 2 cột nguyên bản (Không chuyển trang details)
   const handleViewDetails = async (docId) => {
     try {
-      const docRes = await fetch(`http://127.0.0.1:5000/api/documents/${docId}`);
+      const docRes = await fetch(`${API_BASE_URL}/api/documents/${docId}`);
       if (docRes.ok) {
         const docData = await docRes.json();
         setSelectedDoc(docData);
       }
-      const commentRes = await fetch(`http://127.0.0.1:5000/api/comments/${docId}`);
+      const commentRes = await fetch(`${API_BASE_URL}/api/comments/${docId}`);
       if (commentRes.ok) {
         const commentData = await commentRes.json();
         setComments(commentData);
@@ -209,14 +210,14 @@ export default function App() {
     if (!commentInput.trim()) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/comments', {
+      const res = await fetch(`${API_BASE_URL}/api/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, doc_id: selectedDoc.id, content: commentInput.trim() })
       });
       if (res.ok) {
         setCommentInput('');
-        const commentRes = await fetch(`http://127.0.0.1:5000/api/comments/${selectedDoc.id}`);
+        const commentRes = await fetch(`${API_BASE_URL}/api/comments/${selectedDoc.id}`);
         const commentData = await commentRes.json();
         setComments(commentData);
       }
@@ -226,14 +227,14 @@ export default function App() {
   const handleSendRating = async (stars) => {
     if (!user) return alert("Vui lòng đăng nhập để đánh giá!");
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/ratings', {
+      const res = await fetch(`${API_BASE_URL}/api/ratings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, doc_id: selectedDoc.id, value: stars })
       });
       if (res.ok) {
         alert("Cảm ơn bạn đã đánh giá!");
-        const docRes = await fetch(`http://127.0.0.1:5000/api/documents/${selectedDoc.id}`);
+        const docRes = await fetch(`${API_BASE_URL}/api/documents/${selectedDoc.id}`);
         const docData = await docRes.json();
         setSelectedDoc(docData);
       }
@@ -289,12 +290,12 @@ export default function App() {
               </div>
               <div style={styles.selectBox}>
                 <Filter size={18} style={{color:'#6b7280'}}/>
-<select value={faculty} onChange={(e) => setFaculty(e.target.value)} style={styles.select}>
-  <option value="Tất cả khoa">Tất cả khoa</option>
-  <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-  <option value="Kinh tế">Kinh tế đối ngoại</option>
-  <option value="Điện - Điện tử">Điện - Điện tử</option> {/* Thêm dòng này */}
-</select>
+                <select value={faculty} onChange={(e) => setFaculty(e.target.value)} style={styles.select}>
+                  <option value="Tất cả khoa">Tất cả khoa</option>
+                  <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                  <option value="Kinh tế">Kinh tế đối ngoại</option>
+                  <option value="Điện - Điện tử">Điện - Điện tử</option>
+                </select>
               </div>
             </div>
 
